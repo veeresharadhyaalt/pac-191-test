@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: test-pipeline
+spec:
+  params:
+    - name: url
+      type: string
+    - name: revision
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.url)
+        - name: revision
+          value: $(params.revision)
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: deleteExisting
+          value: 'true'
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: >-
+            registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:fd8871eeb26c16d084591761055c18cc9d16c40bf346695e8f70c5bb17a87f00
+        - name: userHome
+          value: /tekton/home
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: source
+        - name: basic-auth
+          workspace: basic-auth
+    - name: listing-task
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: listing-task
+          - name: namespace
+            value: common-task
+        resolver: cluster
+      workspaces:
+        - name: test-workspace
+          workspace: source
+  workspaces:
+    - name: source
+    - name: basic-auth
