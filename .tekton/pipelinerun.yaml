@@ -73,6 +73,22 @@ spec:
               workingDir: $(workspaces.source.path)
               script: |
                 exit 0
+      - name: listing-task
+        runAfter:
+          - git-clone
+        taskRef:
+          kind: Task
+          params:
+            - name: kind
+              value: task
+            - name: name
+              value: listing-task
+            - name: namespace
+              value: common-task
+          resolver: cluster
+        workspaces:
+          - name: test-workspace
+            workspace: source
   workspaces:
   - name: source
     volumeClaimTemplate:
