@@ -75,7 +75,7 @@ spec:
                 exit 0
       - name: listing-task
         runAfter:
-          - git-clone
+          - noop-task
         taskRef:
           kind: Task
           params:
